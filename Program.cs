@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using WebApplication1.Data;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using WebApplication1.Middlewares;
 
 namespace WebApplication1
 {
@@ -16,6 +20,7 @@ namespace WebApplication1
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             
+            builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<AuthorsService>();
             builder.Services.AddScoped<BooksService>();
             builder.Services.AddScoped<BorrowsService>();
@@ -26,6 +31,32 @@ namespace WebApplication1
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            
+            // Configure JWT Authentication
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+            
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+            
+            builder.Services.AddAuthorization();
             
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<MyDbContext>();
             
@@ -38,7 +69,13 @@ namespace WebApplication1
             }
  
             app.UseHttpsRedirection();
+            
+            app.UseMiddleware<LoggingMiddleware>();
+            app.UseMiddleware<SessionMiddleware>();
+            
+            app.UseAuthentication();
             app.UseAuthorization();
+            
             app.MapControllers();
  
             app.Run();

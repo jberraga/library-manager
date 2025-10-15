@@ -8,7 +8,6 @@ public class Book
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    [Required, StringLength(32)]
     public string? Name {get; set;}
     public int Pages {get; set;}
     [ForeignKey("Author")]
