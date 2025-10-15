@@ -1,100 +1,152 @@
-# 📚 Library Management System API
+# Library Management System API
 
-A modern RESTful API built with .NET 9 for managing a library system, including books, authors, categories, users, and borrowing operations.
+A modern RESTful API for managing a library system built with .NET 9, featuring JWT authentication, Entity Framework Core, and SQL Server.
 
 ## 🚀 Features
 
-- **Complete CRUD Operations** for all entities
-- **Entity Framework Core** with SQL Server integration
-- **ASP.NET Core Identity** for user authentication
-- **Custom Validation Attributes**
-  - Age validation (12-150 years)
-  - Temporary email blocking
-- **OpenAPI/Swagger** documentation support
-- **Service Layer Architecture** for clean separation of concerns
+- **JWT Authentication**: Secure token-based authentication for API endpoints
+- **User Management**: Register, login, and manage user accounts with BCrypt password hashing
+- **Book Management**: CRUD operations for books with author and category relationships
+- **Author Management**: Manage author information and their works
+- **Category Management**: Organize books by categories
+- **Borrow System**: Track book borrowing and returns
+- **Custom Validation**: Email validation (no temporary emails), age validation, and phone number validation
+- **Entity Framework Core**: Code-first approach with migrations
+- **SQL Server**: Azure SQL Database integration
 
-## 📋 Table of Contents
+## 🛠️ Tech Stack
 
-- [Technologies](#technologies)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [API Endpoints](#api-endpoints)
-- [Database Schema](#database-schema)
-- [Custom Validators](#custom-validators)
-- [Configuration](#configuration)
+- **.NET 9.0**: Latest .NET framework
+- **ASP.NET Core Web API**: RESTful API framework
+- **Entity Framework Core 9.0.9**: ORM for database operations
+- **SQL Server**: Database (Azure SQL)
+- **JWT Bearer Authentication**: Secure token-based auth
+- **BCrypt.Net**: Password hashing
+- **OpenAPI/Swagger**: API documentation
 
-## 🛠 Technologies
-
-- **.NET 9.0**
-- **ASP.NET Core Web API**
-- **Entity Framework Core 9.0.9**
-- **SQL Server**
-- **ASP.NET Core Identity**
-- **OpenAPI/Swagger**
-
-### NuGet Packages
-
-- `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (9.0.9)
-- `Microsoft.AspNetCore.Identity.UI` (9.0.9)
-- `Microsoft.AspNetCore.OpenApi` (9.0.9)
-- `Microsoft.EntityFrameworkCore` (9.0.9)
-- `Microsoft.EntityFrameworkCore.SqlServer` (9.0.9)
-- `Microsoft.EntityFrameworkCore.Tools` (9.0.9)
-- `Microsoft.VisualStudio.Web.CodeGeneration.Design` (9.0.0)
-
-## ✅ Prerequisites
+## 📋 Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - SQL Server (local or Azure)
-- An IDE (Visual Studio, Rider, or VS Code)
+- Your favorite IDE (Visual Studio, Rider, VS Code)
 
-## 🏃 Getting Started
+## 🔧 Installation
 
-### 1. Clone the Repository
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd WebApplication1
+   ```
 
-```bash
-git clone <repository-url>
-cd WebApplication1
-```
+2. **Update connection string**
+   
+   Edit `appsettings.json` with your SQL Server connection string:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Your-Connection-String-Here"
+     }
+   }
+   ```
 
-### 2. Update Connection String
+3. **Update JWT Secret Key**
+   
+   For production, generate a secure secret key:
+   ```json
+   {
+     "JwtSettings": {
+       "SecretKey": "YourSecureSecretKeyHere-MinimumLength32Characters",
+       "Issuer": "WebApplication1",
+       "Audience": "WebApplication1",
+       "ExpiryMinutes": "60"
+     }
+   }
+   ```
 
-Edit `appsettings.json` and update the connection string to point to your SQL Server instance:
+4. **Apply database migrations**
+   ```bash
+   dotnet ef database update
+   ```
+
+5. **Run the application**
+   ```bash
+   dotnet run
+   ```
+
+The API will be available at `https://localhost:5001` (or the port specified in `launchSettings.json`).
+
+## 🔐 Authentication
+
+### Register a New User
+
+**POST** `/api/auth/register`
 
 ```json
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=library;User Id=YOUR_USER;Password=YOUR_PASSWORD;"
+  "firstname": "John",
+  "lastname": "Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890",
+  "password": "SecurePassword123",
+  "languages": ["English", "Spanish"],
+  "age": 25
+}
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "languages": ["English", "Spanish"],
+    "age": 25
   }
 }
 ```
 
-### 3. Apply Database Migrations
+### Login
 
-```bash
-cd WebApplication1
-dotnet ef database update
+**POST** `/api/auth/login`
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123"
+}
 ```
 
-### 4. Run the Application
-
-```bash
-dotnet run
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "languages": ["English", "Spanish"],
+    "age": 25
+  }
+}
 ```
 
-The API will be available at:
-- **HTTPS**: `https://localhost:5001`
-- **HTTP**: `http://localhost:5000`
+### Using the JWT Token
 
-### 5. Access API Documentation
+Include the token in the `Authorization` header for all protected endpoints:
 
-In development mode, navigate to:
 ```
-https://localhost:5001/openapi/v1.json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-## 🔌 API Endpoints
+## 📚 API Endpoints
+
+All endpoints except `/api/auth/login` and `/api/auth/register` require JWT authentication.
 
 ### Authors
 - `GET /api/authors` - Get all authors
@@ -117,13 +169,6 @@ https://localhost:5001/openapi/v1.json
 - `PATCH /api/categories/{id}` - Update category
 - `DELETE /api/categories/{id}` - Delete category
 
-### Users
-- `GET /api/users` - Get all users
-- `GET /api/users/{id}` - Get user by ID
-- `POST /api/users` - Create new user
-- `PATCH /api/users/{id}` - Update user
-- `DELETE /api/users/{id}` - Delete user
-
 ### Borrows
 - `GET /api/borrows` - Get all borrow records
 - `GET /api/borrows/{id}` - Get borrow by ID
@@ -131,126 +176,133 @@ https://localhost:5001/openapi/v1.json
 - `PATCH /api/borrows/{id}` - Update borrow record
 - `DELETE /api/borrows/{id}` - Delete borrow record
 
-## 🗄 Database Schema
+### Users
+- `GET /api/users` - Get all users
+- `GET /api/users/{id}` - Get user by ID
+- `POST /api/users` - Create new user
+- `PATCH /api/users/{id}` - Update user
+- `DELETE /api/users/{id}` - Delete user
 
-### Author
-- `Id` (int, PK, Identity)
-- `Firstname` (string, max 50)
-- `Lastname` (string, max 50)
-- `Country` (string, max 50)
-- `Birthdate` (DateTime)
+## 🏗️ Project Structure
 
-### Book
-- `Id` (int, PK, Identity)
-- `Name` (string, required, max 32)
-- `Pages` (int)
-- `AuthorId` (int, FK to Author)
-- `CategoryId` (int, FK to Category)
-
-### Category
-- `Id` (int, PK, Identity)
-- `Name` (string, required, max 32)
-- `Description` (string, max 1024)
-- `AgeRestriction` (int)
-
-### User
-- `Id` (int, PK, Identity)
-- `Firstname` (string, required, max 32)
-- `Lastname` (string, required, max 24)
-- `Email` (string, max 64, validated)
-- `Phone` (string, phone format)
-- `Password` (string, required, max 128)
-- `Languages` (List<string>)
-- `Age` (int, validated 12-150)
-
-### Borrow
-- `Id` (int, PK, Identity)
-- `Date` (DateTime)
-- `Duration` (int, days)
-- `BookId` (int, FK to Book)
-- `UserId` (int, FK to User)
-
-## 🔍 Custom Validators
-
-### AgeAttribute
-Validates that user age is between 12 and 150 years.
-
-```csharp
-[Age]
-public int Age { get; set; }
+```
+WebApplication1/
+├── Attributes/           # Custom validation attributes
+│   ├── AgeAttribute.cs
+│   └── NoTempEmail.cs
+├── Controllers/          # API controllers
+│   ├── AuthController.cs
+│   ├── AuthorsController.cs
+│   ├── BooksController.cs
+│   ├── BorrowsController.cs
+│   ├── CategoriesController.cs
+│   └── UsersController.cs
+├── Data/                 # Database context and DTOs
+│   ├── MyDbContext.cs
+│   └── TransferObjects/
+│       ├── AuthorDto.cs
+│       ├── AuthResponseDto.cs
+│       ├── BookDto.cs
+│       ├── BorrowDto.cs
+│       ├── CategoryDto.cs
+│       ├── LoginDto.cs
+│       ├── RegisterDto.cs
+│       └── UserDto.cs
+├── Entities/             # Database models
+│   ├── Author.cs
+│   ├── Book.cs
+│   ├── Borrow.cs
+│   ├── Category.cs
+│   └── User.cs
+├── Middlewares/          # Custom middleware
+│   └── SessionMiddleware.cs
+├── Migrations/           # EF Core migrations
+├── Services/             # Business logic services
+│   ├── AuthService.cs
+│   ├── AuthorsService.cs
+│   ├── BooksService.cs
+│   ├── BorrowsService.cs
+│   ├── CategoriesService.cs
+│   └── UsersService.cs
+├── Program.cs            # Application entry point
+├── appsettings.json      # Configuration
+└── WebApplication1.csproj
 ```
 
-### NoTempEmailAttribute
-Blocks temporary/disposable email addresses from the following domains:
-- tempmail.com
-- 10minutemail.com
-- mailinator.com
-- guerrillamail.com
-- throwawaymail.com
-- mail.tm
-- mail.gw
+## 🔒 Security Features
 
-```csharp
-[EmailAddress, NoTempEmail]
-public string? Email { get; set; }
-```
+- **Password Hashing**: BCrypt with salt for secure password storage
+- **JWT Tokens**: Stateless authentication with configurable expiration
+- **Token Validation**: Automatic validation via custom middleware
+- **Protected Routes**: All routes except auth endpoints require valid JWT
+- **Custom Validators**: Email validation to prevent temporary/disposable emails
 
-## ⚙️ Configuration
+## 🧪 Testing with cURL
 
-### Development Environment
-
-The application uses different settings for development (defined in `appsettings.Development.json`).
-
-### Identity Configuration
-
-ASP.NET Core Identity is configured with:
-- Email confirmation required for sign-in
-- EntityFramework stores using `MyDbContext`
-
-### Database Provider
-
-SQL Server is used as the database provider. To change to a different provider:
-
-1. Install the appropriate EF Core provider package
-2. Update `Program.cs` to use the new provider
-3. Update the connection string format
-
-## 🔐 Security Notes
-
-⚠️ **Important**: The connection string in `appsettings.json` contains sensitive credentials. 
-
-**Before deploying to production:**
-1. Remove hardcoded credentials from `appsettings.json`
-2. Use Azure Key Vault, AWS Secrets Manager, or environment variables
-3. Enable HTTPS and proper authentication/authorization
-4. Implement rate limiting and API key validation
-5. Add password hashing for User entity passwords
-
-## 🧪 Testing
-
-To run tests (when test project is added):
-
+### Register and Login
 ```bash
-dotnet test
+# Register
+curl -X POST https://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstname": "Jane",
+    "lastname": "Smith",
+    "email": "jane@example.com",
+    "password": "SecurePass123",
+    "age": 30
+  }'
+
+# Login
+curl -X POST https://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane@example.com",
+    "password": "SecurePass123"
+  }'
 ```
 
-## 📝 License
+### Access Protected Endpoint
+```bash
+# Get all authors (requires token)
+curl -X GET https://localhost:5001/api/authors \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+## 📦 NuGet Packages
+
+- `Microsoft.AspNetCore.Authentication.JwtBearer` (9.0.10)
+- `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (9.0.9)
+- `Microsoft.EntityFrameworkCore` (9.0.9)
+- `Microsoft.EntityFrameworkCore.SqlServer` (9.0.9)
+- `BCrypt.Net-Next` (4.0.3)
+- `Microsoft.AspNetCore.OpenApi` (9.0.9)
+
+## 🚦 Getting Started Guide
+
+1. **Start the application** and navigate to the OpenAPI endpoint in development mode
+2. **Register a new user** via `/api/auth/register`
+3. **Copy the JWT token** from the response
+4. **Use the token** in subsequent requests to access protected endpoints
+5. Token expires after 60 minutes (configurable in `appsettings.json`)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
 
 This project is licensed under the MIT License.
 
-## 👥 Contributing
+## 👥 Author
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Your Name - Library Management System
+
+## 🐛 Known Issues
+
+- Make sure to update the JWT secret key in production
+- Ensure SQL Server connection string is properly configured
+- Token expiration time can be adjusted in `appsettings.json`
 
 ## 📞 Support
 
-For support and questions, please open an issue in the repository.
-
----
-
-**Built with ❤️ using .NET 9**
-
+For issues and questions, please open an issue on the repository.

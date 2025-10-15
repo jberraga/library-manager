@@ -22,6 +22,23 @@ public class UsersController : ControllerBase
         return Ok(_service.GetAll());
     }
     
+    [HttpGet("me")]
+    public IActionResult GetMe()
+    {
+        int userId = HttpContext.Items["UserId"] is int id ? id : -1;
+        Console.WriteLine(HttpContext.Items.ToString());
+        if (userId == -1)
+        {
+            return Unauthorized();
+        }
+        
+        var user = _service.GetById(userId);
+        if (user == null)
+            return NotFound();
+        
+        return Ok(user);
+    }
+    
     [HttpGet("{id}")]
     public IActionResult Get(int id)
     {
@@ -30,12 +47,6 @@ public class UsersController : ControllerBase
             return NotFound();
         
         return Ok(user);
-    }
-    
-    [HttpPost]
-    public IActionResult Post(UserDto userDto)
-    {
-        return Ok(_service.Create(userDto));
     }
 
     [HttpPatch("{id}")]

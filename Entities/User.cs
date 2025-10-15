@@ -9,15 +9,10 @@ public class User
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    [Required, StringLength(32)]
     public string? Firstname { get; set; }
-    [Required, StringLength(24)]
     public string? Lastname { get; set; }
-    [EmailAddress, NoTempEmail, StringLength(64)]
     public string? Email { get; set; }
-    [Phone]
     public string? Phone { get; set; }
-    [Required, StringLength(128)]
     public string? Password { get; set; }
     
     public List<string>? Languages  { get; set; }
