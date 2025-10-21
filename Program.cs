@@ -34,7 +34,7 @@ namespace WebApplication1
             
             // Configure JWT Authentication
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+            var secretKey = jwtSettings["SecretKey"] ?? "fGEbuw9ja2kJiYghWFRp/cpXYV4NPInqCNeUKp7tD47v2tHDPRJsnLkf4LDb41O4/nHjYBrBLn1Rdas7SHpsB3OA=="; // dev only
             
             builder.Services.AddAuthentication(options =>
             {
