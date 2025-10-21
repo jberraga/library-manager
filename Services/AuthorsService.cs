@@ -1,8 +1,6 @@
 using WebApplication1.Data;
 using WebApplication1.Data.TransferObjects;
 using WebApplication1.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace WebApplication1.Services;
 
