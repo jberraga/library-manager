@@ -42,9 +42,9 @@ public class SessionMiddleware
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = true,
-                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidIssuer = jwtSettings["Issuer"] ?? "WebApplication1",
                     ValidateAudience = true,
-                    ValidAudience = jwtSettings["Audience"],
+                    ValidAudience = jwtSettings["Audience"] ?? "WebApplication1",
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
